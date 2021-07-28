@@ -51,39 +51,56 @@
         //Validation
         if (empty($nameErr) && empty($passErr)) {
             //Prepare a select statement
-            $sql = "SELECT * FROM users WHERE username='$username' AND email='$useremail' AND pass='$userpass'";
+            $sql = "SELECT id, username, pass FROM users WHERE username = '$username'";
+            echo $username .$useremail .$userpass;
+            
+            
             echo "1";
             if ($stmt = mysqli_prepare($conn, $sql)) {
+                
+                
                 //Bind variables to the prepared statement as parameters
-                mysqli_stmt_bind_param($stmt, "sss", $username, $useremail, $userpass);
+                try{
+                    mysqli_stmt_bind_param($stmt, "sss", $p_username);
+                    $p_username = $username;
+                }
+                catch (Exception $e){
+                    echo 'Message: ' .$e->getMessage();
+                }
+                
+
                 // Attempt to execute the prepared statement
                 echo "2";
-
+                
+                
                 $a = mysqli_stmt_execute($stmt);
                 if ($a) {
                     //Store result
                     mysqli_stmt_store_result($stmt);
                     echo "3";
+                    echo mysqli_stmt_num_rows($stmt);
                     //If username exists then verify password
                     if (mysqli_stmt_num_rows($stmt) == 1) {
                         // Bind result variables
-                        mysqli_stmt_bind_result($stmt, $id, $username, $hashed_password);
                         echo "4";
+                        mysqli_stmt_bind_result($stmt,$id, $username, $p_password);
+                        
                         if (mysqli_stmt_fetch($stmt)) {
-                            
-                            // if (password_verify($password, $hashed_password)) {
-                                // // Password is correct, so start a new session
-                                // session_start();
-                                
-                                // Redirect user to welcome page
+                            echo "you entered " . $userpass;
+                            echo " password checked " . $p_password;
+                            if ($userpass == $p_password) {
                                 echo "Welcome " . $username . "! <br>
                                     <a href=\"signout.php\">Sign Out here!</a>";
                                 die();
-                            // } 
+                            } 
+                            else {
+                                echo "Invalid username or password, <a href=\"signin.php\">please try again!</a>";
+                                die ();
+                            } 
                         } 
                     } else {
-                        // Password is not valid, display a generic error message
-                        $loginErr = "Invalid username or password.";
+                        echo "Invalid username or password, <a href=\"signin.php\">please try again!</a>";
+                        die ();
                     } 
                 } else {
                     echo "Invalid username or password, <a href=\"signin.php\">please try again!</a>";
@@ -95,24 +112,29 @@
             }
         
         }
-
+        $stmt->execute();
         // Close connection
         mysqli_close($conn);
     }
 
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        if (empty($_POST["name"] || $_POST["email"] || $_POST["pass"])) {
-            echo "<p><span class =\"error\">* required field.</span></p>";
-        } else {
-            echo "Welcome " . $username . "! <br>
-                <a href=\"signout.php\">Sign Out here!</a>";
-            die();
-        }
-    }
+    // if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    //     if (empty($_POST["name"] || $_POST["email"] || $_POST["pass"])) {
+    //         echo "<p><span class =\"error\">* required field.</span></p>";
+    //     } else {
+    //         echo "Welcome " . $username . "! <br>
+    //             <a href=\"signout.php\">Sign Out here!</a>";
+    //         die();
+    //     }
+    // }
 
 ?>
 
-<html>
+<html lang = "en">
+    
+    <head>
+        <link rel = "stylesheet" href = "style.css">
+    </head>
+    
 <body>
 
     <h1>This is the Sign In page!</h1>
